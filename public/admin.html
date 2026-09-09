@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trem Da Hora — Painel Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;800;900&family=Work+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF1E0; --paper-2:#F3E1BE; --ink:#2A1F16; --ink-soft:#6B5A47;
+    --brick:#A6432E; --brick-dark:#853424; --yellow:#F2B705; --blue:#1F4E79; --blue-dark:#163A5C;
+    --grass:#3F8F5F; --white:#FFFDF8; --wood-dark:#3E2A1D;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:'Work Sans', sans-serif;}
+  h1,h2{font-family:'Fraunces', sans-serif; color:var(--ink);}
+  .wrap{max-width:1080px; margin:0 auto; padding:40px 24px;}
+
+  /* login */
+  .login-box{max-width:360px; margin:100px auto; background:var(--white); padding:32px; border-radius:16px; box-shadow:0 6px 0 rgba(62,42,29,0.08); text-align:center;}
+  .login-box h1{font-size:1.35rem; margin-bottom:6px;}
+  .login-box p{color:var(--ink-soft); font-size:0.9rem; margin-bottom:20px;}
+  .login-box input{width:100%; padding:12px 14px; border-radius:10px; border:2px solid #e4d8c2; margin-bottom:14px; font-size:0.95rem;}
+  .login-box button{width:100%; background:var(--brick); color:#fff; font-weight:700; padding:12px; border:none; border-radius:10px; cursor:pointer;}
+  .login-box button:hover{background:var(--brick-dark);}
+  .login-error{color:var(--brick-dark); font-size:0.85rem; margin-top:10px; display:none;}
+
+  /* admin */
+  #adminView{display:none;}
+  .top-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:26px; flex-wrap:wrap; gap:12px;}
+  .top-row h1{font-size:1.5rem;}
+  .add-new-btn{background:var(--grass); color:#fff; font-weight:700; padding:10px 20px; border:none; border-radius:10px; cursor:pointer; font-size:0.9rem;}
+  .add-new-btn:hover{opacity:0.92;}
+
+  table{width:100%; border-collapse:collapse; background:var(--white); border-radius:14px; overflow:hidden; box-shadow:0 4px 0 rgba(62,42,29,0.06);}
+  th{background:var(--wood-dark); color:var(--paper); text-align:left; padding:12px 14px; font-size:0.8rem; letter-spacing:0.02em;}
+  td{padding:10px 14px; border-bottom:1px solid rgba(62,42,29,0.08); vertical-align:top;}
+  td input, td select, td textarea{width:100%; padding:8px 10px; border-radius:8px; border:2px solid #e4d8c2; font-family:'Work Sans'; font-size:0.88rem;}
+  td.icon-cell input{width:52px; text-align:center;}
+  td.price-cell input{width:90px;}
+  .photo-cell{text-align:center;}
+  .photo-preview{width:52px; height:52px; border-radius:10px; object-fit:cover; display:block; margin:0 auto 6px; background:var(--paper); border:2px solid #e4d8c2;}
+  .photo-placeholder{width:52px; height:52px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin:0 auto 6px; background:var(--paper); border:2px solid #e4d8c2;}
+  .photo-btn{font-size:0.72rem; font-weight:700; color:var(--ink); background:var(--paper); border:2px solid #e4d8c2; border-radius:100px; padding:4px 10px; cursor:pointer;}
+  .photo-input{display:none;}
+  .row-actions{display:flex; gap:8px;}
+  .save-btn, .del-btn{padding:7px 12px; border-radius:8px; font-weight:700; font-size:0.78rem; border:none; cursor:pointer;}
+  .save-btn{background:var(--blue); color:#fff;}
+  .save-btn:hover{background:var(--blue-dark);}
+  .del-btn{background:#f2e0da; color:var(--brick-dark);}
+  .status-msg{position:fixed; bottom:24px; right:24px; background:var(--wood-dark); color:#fff; padding:12px 20px; border-radius:10px; font-weight:700; font-size:0.88rem; opacity:0; transform:translateY(10px); transition:all .25s; pointer-events:none;}
+  .status-msg.show{opacity:1; transform:translateY(0);}
+  .hint{font-size:0.85rem; color:var(--ink-soft); margin-bottom:20px;}
+
+  /* tabs */
+  .tab-bar{display:flex; gap:10px; margin-bottom:26px; border-bottom:2px dashed rgba(62,42,29,0.15); padding-bottom:14px; flex-wrap:wrap;}
+  .tab-btn{background:var(--white); border:2px solid #e4d8c2; color:var(--ink); font-weight:700; padding:9px 20px; border-radius:100px; font-size:0.9rem; cursor:pointer;}
+  .tab-btn.active{background:var(--wood-dark); color:var(--paper); border-color:var(--wood-dark);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* report cards */
+  .report-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:26px;}
+  @media (max-width:800px){.report-grid{grid-template-columns:repeat(2,1fr);}}
+  .report-card{background:var(--white); border-radius:14px; padding:18px 20px; box-shadow:0 4px 0 rgba(62,42,29,0.06);}
+  .report-card .num{font-family:'Fraunces'; font-weight:800; font-size:1.5rem; color:var(--ink);}
+  .report-card .label{font-size:0.76rem; color:var(--ink-soft); font-weight:700; text-transform:uppercase; letter-spacing:0.03em;}
+
+  /* orders / repairs table */
+  .order-items{font-size:0.82rem; color:var(--ink-soft); line-height:1.5;}
+  .status-pill{font-size:0.76rem; font-weight:700; padding:5px 12px; border-radius:100px; border:2px solid #e4d8c2; background:var(--paper); cursor:pointer;}
+  .status-pill.recebido, .status-pill.novo{background:rgba(242,183,5,0.22); border-color:transparent; color:#8a6a00;}
+  .status-pill.confirmado, .status-pill.concluido{background:rgba(63,143,95,0.2); border-color:transparent; color:#2c6d45;}
+  .status-pill.cancelado{background:rgba(166,67,46,0.16); border-color:transparent; color:var(--brick-dark);}
+  .status-pill.contatado{background:rgba(31,78,121,0.16); border-color:transparent; color:var(--blue-dark);}
+  .empty-state{text-align:center; padding:60px 20px; color:var(--ink-soft);}
+  .empty-state .big{font-size:2.4rem; margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+<div class="login-box" id="loginBox">
+  <h1>🔒 Painel Admin</h1>
+  <p>Trem Da Hora (TDH) — acesso restrito</p>
+  <input type="password" id="loginKey" placeholder="Senha de admin" onkeydown="if(event.key==='Enter') doLogin()">
+  <button onclick="doLogin()">Entrar</button>
+  <div class="login-error" id="loginError">Senha incorreta.</div>
+</div>
+
+<div class="wrap" id="adminView">
+  <div class="top-row">
+    <h1 id="pageTitle">🚂 Painel Trem Da Hora</h1>
+    <button class="add-new-btn" id="addNewBtn" onclick="addNewRow()">+ Novo produto</button>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabBtnProducts" onclick="switchTab('products')">📦 Produtos</button>
+    <button class="tab-btn" id="tabBtnOrders" onclick="switchTab('orders')">🧾 Pedidos</button>
+    <button class="tab-btn" id="tabBtnRepairs" onclick="switchTab('repairs')">✂️ Consertos</button>
+  </div>
+
+  <div class="tab-panel active" id="panelProducts">
+    <p class="hint">Edite os campos direto na tabela e clique em "Salvar" na linha correspondente. As mudanças aparecem na loja na hora.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Foto</th><th>Ícone</th><th>Categoria</th><th>Nome</th><th>Descrição</th><th>Preço (R$)</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="productsBody"></tbody>
+    </table>
+  </div>
+
+  <div class="tab-panel" id="panelOrders">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+      <button class="add-new-btn" style="background:var(--wood-dark);" onclick="loadOrders()">🔄 Atualizar pedidos</button>
+    </div>
+    <div class="report-grid" id="reportGrid"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Pedido</th><th>Cliente</th><th>Itens</th><th>Data</th><th>Pagamento</th><th>Total</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="ordersBody"></tbody>
+    </table>
+    <div class="empty-state" id="ordersEmpty" style="display:none;">
+      <div class="big">🧾</div>
+      <p>Nenhum pedido ainda. Assim que um cliente finalizar uma compra na loja, ele aparece aqui.</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panelRepairs">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+      <button class="add-new-btn" style="background:var(--wood-dark);" onclick="loadRepairs()">🔄 Atualizar solicitações</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th><th>Cliente</th><th>Serviço</th><th>Descrição</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="repairsBody"></tbody>
+    </table>
+    <div class="empty-state" id="repairsEmpty" style="display:none;">
+      <div class="big">✂️</div>
+      <p>Nenhuma solicitação de conserto ainda. Assim que um cliente pedir um orçamento, ele aparece aqui.</p>
+    </div>
+  </div>
+</div>
+
+<div class="status-msg" id="statusMsg"></div>
+
+<script>
+  let adminKey = '';
+  let products = [];
+  let orders = [];
+  let repairs = [];
+  const CATEGORIES = ['armarinho','decoracao','moda','trem-doce','trem-salgado'];
+
+  async function doLogin(){
+    const key = document.getElementById('loginKey').value;
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({key})
+    });
+    const data = await res.json();
+    if(data.ok){
+      adminKey = key;
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('adminView').style.display = 'block';
+      loadProducts();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+    }
+  }
+
+  function switchTab(tab){
+    document.getElementById('tabBtnProducts').classList.toggle('active', tab === 'products');
+    document.getElementById('tabBtnOrders').classList.toggle('active', tab === 'orders');
+    document.getElementById('tabBtnRepairs').classList.toggle('active', tab === 'repairs');
+    document.getElementById('panelProducts').classList.toggle('active', tab === 'products');
+    document.getElementById('panelOrders').classList.toggle('active', tab === 'orders');
+    document.getElementById('panelRepairs').classList.toggle('active', tab === 'repairs');
+    document.getElementById('addNewBtn').style.display = tab === 'products' ? 'inline-block' : 'none';
+    const titles = { products: '🚂 Produtos da loja', orders: '🧾 Pedidos recebidos', repairs: '✂️ Solicitações de conserto' };
+    document.getElementById('pageTitle').textContent = titles[tab];
+    if(tab === 'orders') loadOrders();
+    if(tab === 'repairs') loadRepairs();
+  }
+
+  async function loadOrders(){
+    try {
+      const res = await fetch('/api/orders', { headers: {'x-admin-key': adminKey} });
+      if(!res.ok){
+        const err = await res.json().catch(() => ({}));
+        document.getElementById('reportGrid').innerHTML = '';
+        document.getElementById('ordersBody').innerHTML = '';
+        document.getElementById('ordersEmpty').style.display = 'block';
+        document.getElementById('ordersEmpty').innerHTML = `<div class="big">⚠️</div><p>Erro ao buscar pedidos (HTTP ${res.status}): ${err.error || 'motivo desconhecido'}</p>`;
+        return;
+      }
+      orders = await res.json();
+      renderReport();
+      renderOrders();
+    } catch(e){
+      document.getElementById('ordersEmpty').style.display = 'block';
+      document.getElementById('ordersEmpty').innerHTML = `<div class="big">⚠️</div><p>Não foi possível conectar ao servidor: ${e.message}</p>`;
+    }
+  }
+
+  function renderReport(){
+    const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+    const count = orders.length;
+    const avgTicket = count ? Math.round(totalRevenue / count) : 0;
+    const pending = orders.filter(o => o.status === 'recebido').length;
+
+    document.getElementById('reportGrid').innerHTML = `
+      <div class="report-card"><div class="num">R$ ${totalRevenue}</div><div class="label">Total vendido</div></div>
+      <div class="report-card"><div class="num">${count}</div><div class="label">Pedidos</div></div>
+      <div class="report-card"><div class="num">R$ ${avgTicket}</div><div class="label">Ticket médio</div></div>
+      <div class="report-card"><div class="num">${pending}</div><div class="label">Aguardando confirmação</div></div>
+    `;
+  }
+
+  function renderOrders(){
+    const body = document.getElementById('ordersBody');
+    const empty = document.getElementById('ordersEmpty');
+    if(orders.length === 0){
+      body.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    body.innerHTML = orders.map(o => `
+      <tr class="order-row">
+        <td><strong>${o.id}</strong><br><span style="font-size:0.78rem;color:#8a7a63;">${formatDate(o.created_at)}</span></td>
+        <td>${o.customer_name}<br><span style="font-size:0.8rem;color:var(--ink-soft);">${o.phone}</span><br><span style="font-size:0.78rem;color:#8a7a63;">${o.address}</span></td>
+        <td class="order-items">${o.items.map(it => `${it.qty}× ${it.name}`).join('<br>')}</td>
+        <td>${o.party_date || '—'}</td>
+        <td>${o.payment_method === 'pix' ? '🔑 Pix' : '💳 Cartão'}</td>
+        <td><strong>R$ ${o.total}</strong></td>
+        <td>
+          <select class="status-pill ${o.status}" onchange="updateOrderStatus('${o.id}', this.value)">
+            <option value="recebido" ${o.status==='recebido'?'selected':''}>Recebido</option>
+            <option value="confirmado" ${o.status==='confirmado'?'selected':''}>Confirmado</option>
+            <option value="cancelado" ${o.status==='cancelado'?'selected':''}>Cancelado</option>
+          </select>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function loadRepairs(){
+    try {
+      const res = await fetch('/api/repairs', { headers: {'x-admin-key': adminKey} });
+      if(!res.ok){
+        const err = await res.json().catch(() => ({}));
+        document.getElementById('repairsBody').innerHTML = '';
+        document.getElementById('repairsEmpty').style.display = 'block';
+        document.getElementById('repairsEmpty').innerHTML = `<div class="big">⚠️</div><p>Erro ao buscar solicitações (HTTP ${res.status}): ${err.error || 'motivo desconhecido'}</p>`;
+        return;
+      }
+      repairs = await res.json();
+      renderRepairs();
+    } catch(e){
+      document.getElementById('repairsEmpty').style.display = 'block';
+      document.getElementById('repairsEmpty').innerHTML = `<div class="big">⚠️</div><p>Não foi possível conectar ao servidor: ${e.message}</p>`;
+    }
+  }
+
+  function renderRepairs(){
+    const body = document.getElementById('repairsBody');
+    const empty = document.getElementById('repairsEmpty');
+    if(repairs.length === 0){
+      body.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    body.innerHTML = repairs.map(r => `
+      <tr>
+        <td><strong>${r.id}</strong><br><span style="font-size:0.78rem;color:#8a7a63;">${formatDate(r.created_at)}</span></td>
+        <td>${r.customer_name}<br><span style="font-size:0.8rem;color:var(--ink-soft);">${r.phone}</span></td>
+        <td>${r.service_type || '—'}</td>
+        <td style="max-width:280px;">${r.description}</td>
+        <td>
+          <select class="status-pill ${r.status}" onchange="updateRepairStatus('${r.id}', this.value)">
+            <option value="novo" ${r.status==='novo'?'selected':''}>Novo</option>
+            <option value="contatado" ${r.status==='contatado'?'selected':''}>Contatado</option>
+            <option value="concluido" ${r.status==='concluido'?'selected':''}>Concluído</option>
+            <option value="cancelado" ${r.status==='cancelado'?'selected':''}>Cancelado</option>
+          </select>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function updateRepairStatus(id, status){
+    const res = await fetch('/api/repairs/' + id, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json', 'x-admin-key': adminKey},
+      body: JSON.stringify({status})
+    });
+    if(res.ok){
+      showStatus('Status atualizado ✓');
+      loadRepairs();
+    } else {
+      showStatus('Erro ao atualizar status');
+    }
+  }
+
+  function formatDate(iso){
+    const d = new Date(iso);
+    return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  }
+
+  async function updateOrderStatus(id, status){
+    const res = await fetch('/api/orders/' + id, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json', 'x-admin-key': adminKey},
+      body: JSON.stringify({status})
+    });
+    if(res.ok){
+      showStatus('Status atualizado ✓');
+      loadOrders();
+    } else {
+      showStatus('Erro ao atualizar status');
+    }
+  }
+
+  async function loadProducts(){
+    const res = await fetch('/api/products');
+    products = await res.json();
+    renderTable();
+  }
+
+  function renderTable(){
+    const body = document.getElementById('productsBody');
+    body.innerHTML = products.map(p => `
+      <tr data-id="${p.id}">
+        <td class="photo-cell">
+          ${p.image
+            ? `<img class="photo-preview" src="${p.image}" data-preview>`
+            : `<div class="photo-placeholder" data-preview>${p.icon || '🚂'}</div>`}
+          <input type="hidden" data-field="image" value="${p.image || ''}">
+          <input type="file" accept="image/*" class="photo-input" onchange="handlePhotoChange(this)">
+          <button type="button" class="photo-btn" onclick="this.previousElementSibling.click()">Trocar foto</button>
+        </td>
+        <td class="icon-cell"><input value="${p.icon}" data-field="icon"></td>
+        <td>
+          <select data-field="category">
+            ${CATEGORIES.map(c => `<option value="${c}" ${c===p.category?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </td>
+        <td><input value="${p.name}" data-field="name"></td>
+        <td><input value="${p.description}" data-field="description"></td>
+        <td class="price-cell"><input type="number" value="${p.price}" data-field="price"></td>
+        <td class="row-actions">
+          <button class="save-btn" onclick="saveRow('${p.id}', this)">Salvar</button>
+          <button class="del-btn" onclick="deleteRow('${p.id}', this)">Excluir</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function resizeImageFile(file, maxSize){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Não foi possível ler o arquivo'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Arquivo não é uma imagem válida'));
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxSize || height > maxSize) {
+            const ratio = Math.min(maxSize / width, maxSize / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handlePhotoChange(inputEl){
+    const file = inputEl.files[0];
+    if (!file) return;
+    const td = inputEl.closest('td');
+    const btn = td.querySelector('.photo-btn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Carregando...';
+    try {
+      const dataUrl = await resizeImageFile(file, 500);
+      td.querySelector('[data-field="image"]').value = dataUrl;
+      const preview = td.querySelector('[data-preview]');
+      const newPreview = document.createElement('img');
+      newPreview.className = 'photo-preview';
+      newPreview.setAttribute('data-preview', '');
+      newPreview.src = dataUrl;
+      preview.replaceWith(newPreview);
+    } catch (e) {
+      showStatus('Erro ao carregar imagem: ' + e.message);
+    } finally {
+      btn.textContent = originalText;
+    }
+  }
+
+  function readRow(tr){
+    const data = {};
+    tr.querySelectorAll('[data-field]').forEach(el => {
+      data[el.dataset.field] = el.dataset.field === 'price' ? Number(el.value) : el.value;
+    });
+    return data;
+  }
+
+  async function saveRow(id, btn){
+    const tr = btn.closest('tr');
+    const data = readRow(tr);
+    const isNew = tr.dataset.isNew === 'true';
+
+    const res = await fetch('/api/products' + (isNew ? '' : '/' + id), {
+      method: isNew ? 'POST' : 'PUT',
+      headers: {'Content-Type':'application/json', 'x-admin-key': adminKey},
+      body: JSON.stringify(isNew ? {...data, id} : data)
+    });
+
+    if(res.ok){
+      showStatus(isNew ? 'Produto criado ✓' : 'Salvo ✓');
+      tr.dataset.isNew = 'false';
+      loadProducts();
+    } else {
+      const err = await res.json();
+      showStatus('Erro: ' + (err.error || 'não foi possível salvar'));
+    }
+  }
+
+  async function deleteRow(id, btn){
+    if(!confirm('Excluir este produto?')) return;
+    const res = await fetch('/api/products/' + id, {
+      method: 'DELETE',
+      headers: {'x-admin-key': adminKey}
+    });
+    if(res.ok){
+      showStatus('Produto excluído');
+      loadProducts();
+    } else {
+      showStatus('Erro ao excluir');
+    }
+  }
+
+  function addNewRow(){
+    const newId = 'novo-' + Date.now();
+    const blank = {id:newId, category:'armarinho', name:'Novo produto', description:'', price:0, icon:'🚂', image:null};
+    products.unshift(blank);
+    renderTable();
+    const tr = document.querySelector(`tr[data-id="${newId}"]`);
+    tr.dataset.isNew = 'true';
+  }
+
+  function showStatus(msg){
+    const el = document.getElementById('statusMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  }
+</script>
+
+</body>
+</html>
