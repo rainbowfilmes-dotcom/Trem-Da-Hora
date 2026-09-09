@@ -105,7 +105,7 @@
     <table>
       <thead>
         <tr>
-          <th>Foto</th><th>Ícone</th><th>Categoria</th><th>Nome</th><th>Descrição</th><th>Preço (R$)</th><th></th>
+          <th>Foto</th><th>Ícone</th><th>Categoria</th><th>Subcategoria</th><th>Nome</th><th>Descrição</th><th>Preço (R$)</th><th></th>
         </tr>
       </thead>
       <tbody id="productsBody"></tbody>
@@ -355,6 +355,7 @@
             ${CATEGORIES.map(c => `<option value="${c}" ${c===p.category?'selected':''}>${c}</option>`).join('')}
           </select>
         </td>
+        <td><input value="${p.subcategory || ''}" data-field="subcategory" placeholder="ex: Bolos Fake"></td>
         <td><input value="${p.name}" data-field="name"></td>
         <td><input value="${p.description}" data-field="description"></td>
         <td class="price-cell"><input type="number" value="${p.price}" data-field="price"></td>
@@ -460,7 +461,7 @@
 
   function addNewRow(){
     const newId = 'novo-' + Date.now();
-    const blank = {id:newId, category:'armarinho', name:'Novo produto', description:'', price:0, icon:'🚂', image:null};
+    const blank = {id:newId, category:'armarinho', subcategory:'', name:'Novo produto', description:'', price:0, icon:'🚂', image:null};
     products.unshift(blank);
     renderTable();
     const tr = document.querySelector(`tr[data-id="${newId}"]`);

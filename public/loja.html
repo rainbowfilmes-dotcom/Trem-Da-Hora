@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trem Da Hora (TDH) — Loja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;900&family=Work+Sans:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wood-dark:#3E2A1D;
+    --wood:#8B5A2B;
+    --wood-light:#C79256;
+    --paper:#FBF1E0;
+    --paper-2:#F3E1BE;
+    --brick:#A6432E;
+    --brick-dark:#853424;
+    --yellow:#F2B705;
+    --blue:#1F4E79;
+    --blue-dark:#163A5C;
+    --ink:#2A1F16;
+    --ink-soft:#6B5A47;
+    --paper-white:#FFFDF8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--paper); color:var(--ink); font-family:'Work Sans', sans-serif; line-height:1.55; overflow-x:hidden;}
+  h1,h2,h3,.display{font-family:'Fraunces', serif; color:var(--ink); line-height:1.08;}
+  a{color:inherit; text-decoration:none;}
+  img{max-width:100%; display:block;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+  button{font-family:'Work Sans', sans-serif; cursor:pointer; border:none;}
+  :focus-visible{outline:3px solid var(--yellow); outline-offset:3px;}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}}
+
+  /* ---------- NAV (letreiro de madeira) ---------- */
+  header.nav{position:sticky; top:0; z-index:60; background:var(--paper-white); border-bottom:6px solid var(--wood);}
+  .nav-inner{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1180px; margin:0 auto;}
+  .logo{display:flex; align-items:baseline; gap:2px; font-family:'Fraunces'; font-weight:900; font-size:1.5rem; color:var(--ink);}
+  .logo .t{color:var(--brick);}
+  .logo .d{color:#B8860B;}
+  .logo .h{color:var(--blue);}
+  .logo small{font-family:'Work Sans'; font-weight:600; font-size:0.7rem; color:var(--ink-soft); letter-spacing:0.02em; margin-left:8px;}
+  .nav-links{display:flex; gap:24px; font-weight:700; font-size:0.92rem; color:var(--ink);}
+  .nav-links a{opacity:0.85; transition:opacity .2s; cursor:pointer;}
+  .nav-links a:hover{opacity:1; color:var(--brick);}
+  .cart-btn{position:relative; display:flex; align-items:center; gap:8px; background:var(--brick); color:#fff; font-weight:700; padding:10px 18px; border-radius:8px; font-size:0.92rem;}
+  .cart-count{background:var(--yellow); color:var(--ink); border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:0.72rem; position:absolute; top:-6px; right:-6px; font-weight:800;}
+  @media (max-width:820px){.nav-links{display:none;}}
+
+  /* ---------- HERO ---------- */
+  .shop-hero{padding:56px 0 40px; text-align:center; background:var(--paper-2); border-bottom:2px dashed rgba(42,31,22,0.15);}
+  .shop-hero .tag{display:inline-block; font-family:'Caveat'; font-weight:700; font-size:1.4rem; color:var(--brick-dark); transform:rotate(-2deg); margin-bottom:6px;}
+  .shop-hero h1{font-size:clamp(2rem,4.4vw,3rem); max-width:20ch; margin:0 auto;}
+  .shop-hero p{max-width:56ch; margin:14px auto 0; font-size:1.02rem; color:var(--ink-soft);}
+
+  /* ---------- CATEGORY TABS ---------- */
+  .cat-bar{position:sticky; top:69px; z-index:40; background:var(--paper); padding:14px 0; border-bottom:2px dashed rgba(42,31,22,0.14);}
+  .cat-tabs{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px;}
+  .cat-tab{white-space:nowrap; padding:9px 18px; border-radius:8px; font-weight:700; font-size:0.88rem; background:var(--paper-white); border:2px solid var(--wood-light); color:var(--ink); transition:all .15s;}
+  .cat-tab.active{background:var(--wood-dark); color:var(--paper); border-color:var(--wood-dark);}
+  .cat-tab:hover:not(.active){border-color:var(--brick);}
+
+  /* ---------- PRODUCT GRID ---------- */
+  .shop-main{padding:44px 0 40px;}
+  .cat-section{margin-bottom:54px; scroll-margin-top:150px;}
+  .cat-title{display:flex; align-items:center; gap:12px; margin-bottom:20px;}
+  .cat-title .ic{width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;}
+  .cat-title h2{font-size:1.5rem;}
+
+  .product-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:18px;}
+  @media (max-width:1020px){.product-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.product-grid{grid-template-columns:1fr;}}
+
+  .subcat-wrap{display:flex; flex-direction:column; gap:34px;}
+  .subcat-block{}
+  .subcat-title{font-family:'Caveat'; font-weight:700; font-size:1.5rem; color:var(--brick-dark); margin-bottom:14px; transform:rotate(-1deg); display:inline-block;}
+
+  .product-card{background:var(--paper-white); border-radius:14px; overflow:hidden; border:2px solid rgba(42,31,22,0.09); display:flex; flex-direction:column; transition:transform .18s, box-shadow .18s;}
+  .product-card:hover{transform:translateY(-3px); box-shadow:0 10px 0 rgba(139,90,43,0.15);}
+  .product-img{height:120px; display:flex; align-items:center; justify-content:center; font-size:2.4rem;}
+  .product-body{padding:16px 16px 18px; display:flex; flex-direction:column; flex:1;}
+  .product-body h3{font-size:1rem; margin-bottom:6px; font-family:'Work Sans'; font-weight:700; color:var(--ink);}
+  .product-body p{font-size:0.84rem; color:var(--ink-soft); flex:1; margin-bottom:14px;}
+  .product-foot{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .price{font-family:'Fraunces'; font-weight:700; color:var(--ink); font-size:1.08rem;}
+  .price span{font-size:0.68rem; color:var(--ink-soft); font-family:'Work Sans'; font-weight:600; display:block;}
+  .add-btn{background:var(--blue); color:#fff; font-weight:700; padding:8px 14px; border-radius:8px; font-size:0.82rem; transition:transform .15s, background .15s;}
+  .add-btn:hover{transform:translateY(-2px); background:var(--blue-dark);}
+  .add-btn.added{background:#3F8F5F;}
+
+  /* ---------- CONSERTOS ---------- */
+  .repairs-section{background:var(--wood-dark); padding:56px 0; margin-top:10px;}
+  .repairs-inner{display:grid; grid-template-columns:1fr 1fr; gap:44px; align-items:start;}
+  @media (max-width:880px){.repairs-inner{grid-template-columns:1fr;}}
+  .repairs-info .tag{font-family:'Caveat'; font-weight:700; font-size:1.3rem; color:var(--yellow); display:block; margin-bottom:6px; transform:rotate(-1.5deg);}
+  .repairs-info h2{color:var(--paper); font-size:1.8rem; margin-bottom:14px;}
+  .repairs-info p{color:var(--paper-2); font-size:0.98rem; margin-bottom:18px; max-width:44ch;}
+  .repair-list{list-style:none; display:flex; flex-direction:column; gap:10px;}
+  .repair-list li{color:var(--paper-2); font-size:0.92rem; display:flex; align-items:center; gap:10px;}
+  .repair-list li::before{content:'✂️'; font-size:0.9rem;}
+
+  .repair-form{background:var(--paper-white); border-radius:16px; padding:28px; }
+  .repair-form h3{font-size:1.15rem; margin-bottom:16px; color:var(--ink);}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:var(--ink);}
+  .field input, .field textarea, .field select{width:100%; padding:11px 14px; border-radius:10px; border:2px solid #e4d8c2; font-family:'Work Sans'; font-size:0.94rem; background:var(--paper);}
+  .field input:focus, .field textarea:focus, .field select:focus{border-color:var(--brick);}
+  .field textarea{resize:vertical; min-height:90px;}
+  .repair-submit-btn{width:100%; background:var(--brick); color:#fff; font-weight:700; padding:14px; border-radius:10px; font-size:0.98rem; transition:background .15s;}
+  .repair-submit-btn:hover{background:var(--brick-dark);}
+  .repair-success{text-align:center; padding:10px 0;}
+  .repair-success .big{font-size:2.4rem; margin-bottom:10px;}
+  .repair-id{display:inline-block; background:var(--paper-2); padding:6px 16px; border-radius:100px; font-weight:700; color:var(--ink); margin-top:10px; font-family:'Fraunces';}
+
+  /* ---------- CART DRAWER ---------- */
+  .overlay{position:fixed; inset:0; background:rgba(42,31,22,0.4); z-index:70; opacity:0; pointer-events:none; transition:opacity .25s;}
+  .overlay.show{opacity:1; pointer-events:auto;}
+  .cart-drawer{position:fixed; top:0; right:-420px; width:min(420px, 100vw); height:100%; background:var(--paper-white); z-index:80; box-shadow:-8px 0 24px rgba(0,0,0,0.15); transition:right .3s ease; display:flex; flex-direction:column;}
+  .cart-drawer.show{right:0;}
+  .cart-head{padding:22px 24px; border-bottom:2px dashed rgba(42,31,22,0.15); display:flex; align-items:center; justify-content:space-between;}
+  .cart-head h2{font-size:1.25rem;}
+  .close-btn{background:var(--paper-2); width:36px; height:36px; border-radius:50%; font-size:1.1rem; font-weight:800; color:var(--ink);}
+  .cart-items{flex:1; overflow-y:auto; padding:18px 24px;}
+  .cart-empty{text-align:center; padding:60px 20px; color:var(--ink-soft);}
+  .cart-empty .big{font-size:2.4rem; margin-bottom:10px;}
+  .cart-item{display:flex; gap:12px; padding:14px 0; border-bottom:1px solid rgba(42,31,22,0.08);}
+  .cart-item .ic{width:52px; height:52px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0;}
+  .cart-item-info{flex:1;}
+  .cart-item-info h4{font-size:0.94rem; margin-bottom:2px; font-family:'Work Sans'; font-weight:700;}
+  .cart-item-info .unit{font-size:0.78rem; color:var(--ink-soft);}
+  .qty-row{display:flex; align-items:center; gap:10px; margin-top:8px;}
+  .qty-btn{width:24px; height:24px; border-radius:50%; background:var(--paper-2); font-weight:800; color:var(--ink); font-size:0.9rem; display:flex; align-items:center; justify-content:center;}
+  .qty-val{font-weight:700; font-size:0.92rem; min-width:16px; text-align:center;}
+  .remove-link{font-size:0.78rem; color:var(--brick-dark); font-weight:700; margin-left:auto; cursor:pointer;}
+  .item-total{font-family:'Fraunces'; font-weight:700; color:var(--ink); font-size:0.95rem; white-space:nowrap;}
+
+  .cart-foot{padding:20px 24px 26px; border-top:2px dashed rgba(42,31,22,0.15);}
+  .subtotal-row{display:flex; justify-content:space-between; font-weight:700; font-size:1.08rem; margin-bottom:16px; font-family:'Fraunces'; color:var(--ink);}
+  .checkout-btn{width:100%; background:var(--brick); color:#fff; font-weight:700; padding:15px; border-radius:10px; font-size:1rem;}
+  .checkout-btn:disabled{background:#d9cfc0; cursor:not-allowed;}
+  .checkout-btn:hover:not(:disabled){background:var(--brick-dark);}
+
+  /* ---------- CHECKOUT MODAL ---------- */
+  .checkout-modal{position:fixed; inset:0; z-index:90; display:none; align-items:flex-start; justify-content:center; overflow-y:auto; padding:40px 20px;}
+  .checkout-modal.show{display:flex;}
+  .checkout-box{background:var(--paper-white); border-radius:20px; max-width:620px; width:100%; padding:34px; position:relative;}
+  .checkout-box .close-btn{position:absolute; top:18px; right:18px;}
+  .checkout-box h2{font-size:1.5rem; margin-bottom:6px;}
+  .checkout-box .sub{color:var(--ink-soft); margin-bottom:24px; font-size:0.94rem;}
+  .co-section{margin-bottom:22px;}
+  .co-section h3{font-size:0.98rem; color:var(--ink); margin-bottom:12px; font-family:'Fraunces'; font-weight:700;}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .field-row3{display:grid; grid-template-columns:2fr 1fr 1fr; gap:12px;}
+  @media (max-width:520px){.field-row,.field-row3{grid-template-columns:1fr;}}
+  .pay-tabs{display:flex; gap:10px; margin-bottom:16px;}
+  .pay-tab{flex:1; text-align:center; padding:12px; border-radius:10px; border:2px solid #e4d8c2; font-weight:700; font-size:0.86rem; color:var(--ink);}
+  .pay-tab.active{border-color:var(--brick); background:rgba(166,67,46,0.08); color:var(--brick-dark);}
+  .co-summary{background:var(--paper-2); border-radius:14px; padding:16px 18px; margin-bottom:22px; font-size:0.9rem;}
+  .co-summary-row{display:flex; justify-content:space-between; padding:4px 0;}
+  .co-summary-row.total{font-weight:700; font-size:1.02rem; color:var(--ink); border-top:1px dashed rgba(42,31,22,0.2); margin-top:8px; padding-top:10px; font-family:'Fraunces';}
+  .place-order-btn{width:100%; background:var(--blue); color:#fff; font-weight:700; padding:15px; border-radius:10px; font-size:1rem;}
+  .place-order-btn:hover{background:var(--blue-dark);}
+  .lock-note{text-align:center; font-size:0.78rem; color:var(--ink-soft); margin-top:12px;}
+
+  .success-view{text-align:center; padding:20px 0;}
+  .success-view .big{font-size:3rem; margin-bottom:14px;}
+  .success-view h2{margin-bottom:8px;}
+  .order-id{display:inline-block; background:var(--paper-2); padding:8px 18px; border-radius:100px; font-weight:700; color:var(--ink); margin-top:14px; font-family:'Fraunces';}
+
+  footer{background:var(--wood-dark); color:var(--paper-2); padding:36px 0 24px; margin-top:0;}
+  .footer-inner{display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; font-size:0.85rem; align-items:center;}
+  .footer-logo{font-family:'Fraunces'; font-weight:900; color:var(--paper); font-size:1.1rem;}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="logo"><span class="t">T</span>rem <span class="d">D</span>a <span class="h">H</span>ora<small>CANTINA MINEIRA · DESDE 2024</small></div>
+    <nav class="nav-links">
+      <a onclick="scrollToCat('armarinho')">Armarinho</a>
+      <a onclick="scrollToCat('decoracao')">Decoração</a>
+      <a onclick="scrollToCat('moda')">Moda</a>
+      <a onclick="scrollToCat('trem-doce')">Trem Doce</a>
+      <a onclick="scrollToCat('trem-salgado')">Trem Salgado</a>
+      <a onclick="scrollToRepairs()">Consertos</a>
+    </nav>
+    <button class="cart-btn" onclick="openCart()">
+      🛒 Carrinho
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<section class="shop-hero">
+  <div class="wrap">
+    <span class="tag">tudo debaixo do mesmo telhado</span>
+    <h1>Armarinho, decoração, moda, doces e salgados — do jeito de sempre, agora online</h1>
+    <p>Escolha seus produtos, monte o carrinho e finalize a compra por aqui. Precisa de um ajuste na roupa? Peça um orçamento de conserto lá embaixo.</p>
+  </div>
+</section>
+
+<div class="cat-bar">
+  <div class="wrap">
+    <div class="cat-tabs">
+      <button class="cat-tab active" onclick="scrollToCat('armarinho', this)">🧵 Armarinho</button>
+      <button class="cat-tab" onclick="scrollToCat('decoracao', this)">🖼️ Decoração</button>
+      <button class="cat-tab" onclick="scrollToCat('moda', this)">👗 Moda</button>
+      <button class="cat-tab" onclick="scrollToCat('trem-doce', this)">🍮 Trem Doce</button>
+      <button class="cat-tab" onclick="scrollToCat('trem-salgado', this)">🥟 Trem Salgado</button>
+    </div>
+  </div>
+</div>
+
+<main class="shop-main">
+  <div class="wrap">
+
+    <section class="cat-section" id="armarinho">
+      <div class="cat-title"><div class="ic" style="background:rgba(31,78,121,0.14);">🧵</div><h2>Armarinho</h2></div>
+      <div class="product-grid" id="grid-armarinho"></div>
+    </section>
+
+    <section class="cat-section" id="decoracao">
+      <div class="cat-title"><div class="ic" style="background:rgba(242,183,5,0.22);">🖼️</div><h2>Decoração</h2></div>
+      <div class="product-grid" id="grid-decoracao"></div>
+    </section>
+
+    <section class="cat-section" id="moda">
+      <div class="cat-title"><div class="ic" style="background:rgba(166,67,46,0.14);">👗</div><h2>Moda</h2></div>
+      <div class="product-grid" id="grid-moda"></div>
+    </section>
+
+    <section class="cat-section" id="trem-doce">
+      <div class="cat-title"><div class="ic" style="background:rgba(242,183,5,0.22);">🍮</div><h2>Trem Doce</h2></div>
+      <div class="product-grid" id="grid-trem-doce"></div>
+    </section>
+
+    <section class="cat-section" id="trem-salgado">
+      <div class="cat-title"><div class="ic" style="background:rgba(166,67,46,0.14);">🥟</div><h2>Trem Salgado</h2></div>
+      <div class="product-grid" id="grid-trem-salgado"></div>
+    </section>
+
+  </div>
+</main>
+
+<section class="repairs-section" id="consertos">
+  <div class="wrap repairs-inner">
+    <div class="repairs-info">
+      <span class="tag">nossa costureira cuida disso</span>
+      <h2>Precisa de um ajuste? A gente resolve.</h2>
+      <p>Bainhas, apertos, troca de zíper e outros pequenos consertos. Descreva o que precisa e a gente entra em contato para combinar prazo e valor — você só traz a peça depois de combinado.</p>
+      <ul class="repair-list">
+        <li>Bainha de calça, saia ou vestido</li>
+        <li>Aperto ou alargamento de peças</li>
+        <li>Troca de zíper</li>
+        <li>Pequenos reparos e remendos</li>
+      </ul>
+    </div>
+
+    <div class="repair-form">
+      <div id="repairFormView">
+        <h3>Solicitar orçamento</h3>
+        <div class="field"><label for="repNome">Nome completo</label><input id="repNome" type="text" required></div>
+        <div class="field"><label for="repTel">WhatsApp</label><input id="repTel" type="tel" placeholder="(31) 9 0000-0000" required></div>
+        <div class="field">
+          <label for="repTipo">Tipo de serviço</label>
+          <select id="repTipo">
+            <option value="Bainha">Bainha</option>
+            <option value="Aperto/Alargamento">Aperto ou alargamento</option>
+            <option value="Troca de zíper">Troca de zíper</option>
+            <option value="Outro reparo">Outro reparo</option>
+          </select>
+        </div>
+        <div class="field"><label for="repDesc">Descreva o que precisa</label><textarea id="repDesc" placeholder="Ex: bainha de uma calça social, preciso encurtar uns 4cm" required></textarea></div>
+        <button class="repair-submit-btn" onclick="submitRepair()">Enviar solicitação</button>
+      </div>
+      <div class="repair-success" id="repairSuccessView" style="display:none;">
+        <div class="big">✂️</div>
+        <h3>Solicitação enviada!</h3>
+        <p style="color:var(--ink-soft); font-size:0.92rem; margin-top:6px;">Vamos entrar em contato pelo WhatsApp para combinar prazo e valor.</p>
+        <div class="repair-id" id="repairIdDisplay"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div class="footer-logo">Trem Da Hora</div>
+    <span>© 2026 Trem Da Hora (TDH) · Cantina Mineira, Armarinho e Moda</span>
+  </div>
+</footer>
+
+<!-- CART DRAWER -->
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-head">
+    <h2>Seu carrinho</h2>
+    <button class="close-btn" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot">
+    <div class="subtotal-row"><span>Subtotal</span><span id="cartSubtotal">R$ 0</span></div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="openCheckout()" disabled>Finalizar compra</button>
+  </div>
+</aside>
+
+<!-- CHECKOUT MODAL -->
+<div class="checkout-modal" id="checkoutModal">
+  <div class="checkout-box">
+    <button class="close-btn" onclick="closeCheckout()">✕</button>
+
+    <div id="checkoutFormView">
+      <h2>Finalizar pedido</h2>
+      <p class="sub">Revise os itens e preencha os dados para confirmar sua compra.</p>
+
+      <div class="co-summary" id="coSummary"></div>
+
+      <div class="co-section">
+        <h3>Dados para entrega</h3>
+        <div class="field"><label for="coNome">Nome completo</label><input id="coNome" type="text" required></div>
+        <div class="field-row">
+          <div class="field"><label for="coTel">WhatsApp</label><input id="coTel" type="tel" placeholder="(31) 9 0000-0000" required></div>
+          <div class="field"><label for="coData">Data desejada (opcional)</label><input id="coData" type="date"></div>
+        </div>
+        <div class="field"><label for="coEndereco">Endereço de entrega ou retirada</label><input id="coEndereco" type="text" placeholder="Rua, número, bairro" required></div>
+      </div>
+
+      <div class="co-section">
+        <h3>Pagamento</h3>
+        <div class="pay-tabs">
+          <div class="pay-tab active" id="payTabCard" onclick="setPayMethod('card')">💳 Cartão</div>
+          <div class="pay-tab" id="payTabPix" onclick="setPayMethod('pix')">🔑 Pix</div>
+        </div>
+        <div id="cardFields">
+          <div class="field"><label for="coCardNum">Número do cartão</label><input id="coCardNum" type="text" placeholder="0000 0000 0000 0000"></div>
+          <div class="field-row3">
+            <div class="field"><label for="coCardName">Nome no cartão</label><input id="coCardName" type="text"></div>
+            <div class="field"><label for="coCardExp">Validade</label><input id="coCardExp" type="text" placeholder="MM/AA"></div>
+            <div class="field"><label for="coCardCvv">CVV</label><input id="coCardCvv" type="text" placeholder="000"></div>
+          </div>
+        </div>
+        <div id="pixFields" style="display:none;">
+          <p style="font-size:0.9rem; color:var(--ink-soft);">Ao confirmar, geramos um link de pagamento Pix com o valor total.</p>
+        </div>
+      </div>
+
+      <button class="place-order-btn" onclick="placeOrder()">Confirmar e pagar</button>
+      <p class="lock-note">🔒 Pagamento processado com segurança via Mercado Pago.</p>
+    </div>
+
+    <div class="success-view" id="checkoutSuccessView" style="display:none;">
+      <div class="big">🎉</div>
+      <h2>Pedido confirmado!</h2>
+      <p class="sub">Recebemos seu pedido. Entraremos em contato para combinar a entrega ou retirada.</p>
+      <div class="order-id" id="orderIdDisplay"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CATEGORIES = ['armarinho', 'decoracao', 'moda', 'trem-doce', 'trem-salgado'];
+  let PRODUCTS = {};
+  CATEGORIES.forEach(c => PRODUCTS[c] = []);
+
+  let cart = {}; // id -> {product, qty}
+  let payMethod = 'card';
+
+  async function loadProducts(){
+    const res = await fetch('/api/products');
+    const rows = await res.json();
+    CATEGORIES.forEach(c => PRODUCTS[c] = []);
+    for(const row of rows){
+      if(!PRODUCTS[row.category]) PRODUCTS[row.category] = [];
+      PRODUCTS[row.category].push({ id: row.id, name: row.name, desc: row.description, price: row.price, icon: row.icon, image: row.image, subcategory: row.subcategory });
+    }
+    renderProducts();
+  }
+
+  function renderProducts(){
+    for(const cat in PRODUCTS){
+      const grid = document.getElementById('grid-'+cat);
+      if(!grid) continue;
+
+      const items = PRODUCTS[cat];
+      const hasSubcats = items.some(p => p.subcategory);
+
+      if(!hasSubcats){
+        grid.className = 'product-grid';
+        grid.innerHTML = items.map(p => productCard(p, cat)).join('');
+        continue;
+      }
+
+      grid.className = 'subcat-wrap';
+      // Agrupa por subcategoria; itens sem subcategoria caem em "Outros"
+      const groups = {};
+      items.forEach(p => {
+        const key = p.subcategory || 'Outros';
+        if(!groups[key]) groups[key] = [];
+        groups[key].push(p);
+      });
+
+      grid.innerHTML = Object.entries(groups).map(([subcat, prods]) => `
+        <div class="subcat-block">
+          <h3 class="subcat-title">${subcat}</h3>
+          <div class="product-grid">${prods.map(p => productCard(p, cat)).join('')}</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  function productCard(p, cat){
+    return `
+        <div class="product-card">
+          <div class="product-img" style="background:${cardBg(cat)};">${p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">` : p.icon}</div>
+          <div class="product-body">
+            <h3>${p.name}</h3>
+            <p>${p.desc}</p>
+            <div class="product-foot">
+              <div class="price">R$ ${p.price}<span>por item</span></div>
+              <button class="add-btn" id="btn-${p.id}" onclick="addToCart('${cat}','${p.id}', this)">+ Adicionar</button>
+            </div>
+          </div>
+        </div>
+      `;
+  }
+
+  function cardBg(cat){
+    const map = {
+      armarinho:'rgba(31,78,121,0.10)',
+      decoracao:'rgba(242,183,5,0.16)',
+      moda:'rgba(166,67,46,0.10)',
+      'trem-doce':'rgba(242,183,5,0.16)',
+      'trem-salgado':'rgba(166,67,46,0.10)'
+    };
+    return map[cat] || 'rgba(139,90,43,0.1)';
+  }
+
+  function findProduct(id){
+    for(const cat in PRODUCTS){
+      const found = PRODUCTS[cat].find(p => p.id === id);
+      if(found) return found;
+    }
+  }
+
+  function addToCart(cat, id, btnEl){
+    const product = PRODUCTS[cat].find(p => p.id === id);
+    if(cart[id]){ cart[id].qty += 1; } else { cart[id] = {product, qty:1}; }
+    renderCart();
+    if(btnEl){
+      btnEl.textContent = 'Adicionado ✓';
+      btnEl.classList.add('added');
+      setTimeout(()=>{ btnEl.textContent = '+ Adicionar'; btnEl.classList.remove('added'); }, 900);
+    }
+  }
+
+  function changeQty(id, delta){
+    if(!cart[id]) return;
+    cart[id].qty += delta;
+    if(cart[id].qty <= 0) delete cart[id];
+    renderCart();
+  }
+
+  function removeItem(id){
+    delete cart[id];
+    renderCart();
+  }
+
+  function cartTotal(){
+    return Object.values(cart).reduce((sum, item) => sum + item.product.price * item.qty, 0);
+  }
+
+  function cartItemCount(){
+    return Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+  }
+
+  function renderCart(){
+    const container = document.getElementById('cartItems');
+    const count = cartItemCount();
+    document.getElementById('cartCount').textContent = count;
+    document.getElementById('checkoutBtn').disabled = count === 0;
+
+    if(count === 0){
+      container.innerHTML = `<div class="cart-empty"><div class="big">🛒</div><p>Seu carrinho está vazio.<br>Adicione produtos para continuar.</p></div>`;
+    } else {
+      container.innerHTML = Object.entries(cart).map(([id, item]) => `
+        <div class="cart-item">
+          <div class="ic" style="background:${cardBg(catOf(id))};">${item.product.icon}</div>
+          <div class="cart-item-info">
+            <h4>${item.product.name}</h4>
+            <div class="unit">R$ ${item.product.price} / un</div>
+            <div class="qty-row">
+              <button class="qty-btn" onclick="changeQty('${id}', -1)">−</button>
+              <span class="qty-val">${item.qty}</span>
+              <button class="qty-btn" onclick="changeQty('${id}', 1)">+</button>
+              <span class="remove-link" onclick="removeItem('${id}')">remover</span>
+            </div>
+          </div>
+          <div class="item-total">R$ ${item.product.price * item.qty}</div>
+        </div>
+      `).join('');
+    }
+    document.getElementById('cartSubtotal').textContent = 'R$ ' + cartTotal();
+  }
+
+  function catOf(id){
+    for(const cat in PRODUCTS){
+      if(PRODUCTS[cat].find(p => p.id === id)) return cat;
+    }
+  }
+
+  function scrollToCat(cat, tabEl){
+    document.getElementById(cat).scrollIntoView({behavior:'smooth', block:'start'});
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    if(tabEl) tabEl.classList.add('active');
+  }
+
+  function scrollToRepairs(){
+    document.getElementById('consertos').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function openCart(){
+    document.getElementById('cartDrawer').classList.add('show');
+    document.getElementById('overlay').classList.add('show');
+  }
+  function closeCart(){
+    document.getElementById('cartDrawer').classList.remove('show');
+    document.getElementById('overlay').classList.remove('show');
+  }
+  function closeAll(){
+    closeCart();
+    closeCheckout();
+  }
+
+  function openCheckout(){
+    if(cartItemCount() === 0) return;
+    renderCheckoutSummary();
+    document.getElementById('checkoutFormView').style.display = 'block';
+    document.getElementById('checkoutSuccessView').style.display = 'none';
+    document.getElementById('checkoutModal').classList.add('show');
+    document.getElementById('overlay').classList.add('show');
+  }
+  function closeCheckout(){
+    document.getElementById('checkoutModal').classList.remove('show');
+    document.getElementById('overlay').classList.remove('show');
+  }
+
+  function renderCheckoutSummary(){
+    const rows = Object.entries(cart).map(([id, item]) => `
+      <div class="co-summary-row"><span>${item.qty}× ${item.product.name}</span><span>R$ ${item.product.price * item.qty}</span></div>
+    `).join('');
+    document.getElementById('coSummary').innerHTML = rows + `
+      <div class="co-summary-row total"><span>Total</span><span>R$ ${cartTotal()}</span></div>
+    `;
+  }
+
+  function setPayMethod(method){
+    payMethod = method;
+    document.getElementById('payTabCard').classList.toggle('active', method === 'card');
+    document.getElementById('payTabPix').classList.toggle('active', method === 'pix');
+    document.getElementById('cardFields').style.display = method === 'card' ? 'block' : 'none';
+    document.getElementById('pixFields').style.display = method === 'pix' ? 'block' : 'none';
+  }
+
+  async function placeOrder(){
+    const nome = document.getElementById('coNome').value.trim();
+    const tel = document.getElementById('coTel').value.trim();
+    const endereco = document.getElementById('coEndereco').value.trim();
+    const data = document.getElementById('coData').value;
+    if(!nome || !tel || !endereco){
+      alert('Preencha nome, WhatsApp e endereço para continuar.');
+      return;
+    }
+
+    const items = Object.values(cart).map(item => ({
+      id: item.product.id, name: item.product.name, price: item.product.price, qty: item.qty
+    }));
+
+    const btn = document.querySelector('.place-order-btn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Enviando pedido...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          customerName: nome,
+          phone: tel,
+          address: endereco,
+          partyDate: data,
+          paymentMethod: payMethod,
+          total: cartTotal(),
+          items
+        })
+      });
+      const result = await res.json();
+      if(!res.ok){
+        alert('Não foi possível enviar o pedido: ' + (result.error || 'erro desconhecido'));
+        btn.textContent = originalText;
+        btn.disabled = false;
+        return;
+      }
+
+      btn.textContent = 'Preparando pagamento...';
+      const mpRes = await fetch('/api/checkout/create-preference', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ orderId: result.orderId })
+      });
+      const mpData = await mpRes.json();
+
+      if(mpRes.ok && mpData.configured && mpData.init_point){
+        window.location.href = mpData.init_point;
+        return;
+      }
+
+      document.getElementById('orderIdDisplay').textContent = 'Pedido ' + result.orderId;
+      document.getElementById('checkoutFormView').style.display = 'none';
+      document.getElementById('checkoutSuccessView').style.display = 'block';
+      cart = {};
+      renderCart();
+    } catch(e){
+      alert('Erro de conexão. Verifique se o servidor está rodando e tente de novo.');
+    }
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+
+  async function submitRepair(){
+    const nome = document.getElementById('repNome').value.trim();
+    const tel = document.getElementById('repTel').value.trim();
+    const tipo = document.getElementById('repTipo').value;
+    const desc = document.getElementById('repDesc').value.trim();
+    if(!nome || !tel || !desc){
+      alert('Preencha nome, WhatsApp e a descrição do serviço.');
+      return;
+    }
+
+    const btn = document.querySelector('.repair-submit-btn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/repairs', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ customerName: nome, phone: tel, serviceType: tipo, description: desc })
+      });
+      const result = await res.json();
+      if(!res.ok){
+        alert('Não foi possível enviar: ' + (result.error || 'erro desconhecido'));
+        btn.textContent = originalText;
+        btn.disabled = false;
+        return;
+      }
+      document.getElementById('repairIdDisplay').textContent = 'Solicitação ' + result.repairId;
+      document.getElementById('repairFormView').style.display = 'none';
+      document.getElementById('repairSuccessView').style.display = 'block';
+    } catch(e){
+      alert('Erro de conexão. Verifique se o servidor está rodando e tente de novo.');
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  function checkReturnFromPayment(){
+    const params = new URLSearchParams(window.location.search);
+    const pedido = params.get('pedido');
+    const status = params.get('status');
+    if(!pedido || !status) return;
+
+    const messages = {
+      sucesso: { icon:'🎉', title:'Pagamento aprovado!', text:'Recebemos a confirmação do Mercado Pago. Seu pedido está garantido!' },
+      pendente: { icon:'⏳', title:'Pagamento em análise', text:'Assim que o Mercado Pago confirmar, atualizamos seu pedido automaticamente.' },
+      falha: { icon:'⚠️', title:'Pagamento não concluído', text:'Algo deu errado no pagamento. Você pode tentar novamente quando quiser.' }
+    };
+    const info = messages[status];
+    if(!info) return;
+
+    alert(`${info.icon} ${info.title}\n\n${info.text}\n\nPedido: ${pedido}`);
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  loadProducts();
+  renderCart();
+  checkReturnFromPayment();
+</script>
+
+</body>
+</html>
