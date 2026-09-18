@@ -76,6 +76,22 @@
   .status-pill.contatado{background:rgba(31,78,121,0.16); border-color:transparent; color:var(--blue-dark);}
   .empty-state{text-align:center; padding:60px 20px; color:var(--ink-soft);}
   .empty-state .big{font-size:2.4rem; margin-bottom:10px;}
+
+  /* variants modal */
+  .modal-overlay{position:fixed; inset:0; background:rgba(42,31,22,0.45); z-index:100; display:none; align-items:center; justify-content:center;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--white); border-radius:16px; padding:26px; width:min(480px, 92vw); max-height:85vh; overflow-y:auto;}
+  .modal-box h3{font-size:1.15rem; margin-bottom:6px;}
+  .modal-box .sub{color:var(--ink-soft); font-size:0.86rem; margin-bottom:18px;}
+  .variant-row{display:flex; gap:8px; margin-bottom:10px; align-items:center;}
+  .variant-row input{flex:1;}
+  .variant-row input.v-price{max-width:100px;}
+  .variant-row .v-del{background:#f2e0da; color:var(--brick-dark); border:none; border-radius:8px; padding:8px 10px; cursor:pointer; font-weight:700;}
+  .modal-actions{display:flex; gap:10px; margin-top:18px;}
+  .modal-add-btn{background:var(--paper-2); color:var(--ink); font-weight:700; padding:9px 14px; border-radius:8px; border:none; cursor:pointer; font-size:0.85rem;}
+  .modal-save-btn{background:var(--blue); color:#fff; font-weight:700; padding:9px 18px; border-radius:8px; border:none; cursor:pointer; flex:1;}
+  .modal-cancel-btn{background:var(--paper); color:var(--ink); font-weight:700; padding:9px 18px; border-radius:8px; border:2px solid #e4d8c2; cursor:pointer;}
+  .modal-hint{font-size:0.78rem; color:var(--ink-soft); margin-top:12px;}
 </style>
 </head>
 <body>
@@ -98,6 +114,7 @@
     <button class="tab-btn active" id="tabBtnProducts" onclick="switchTab('products')">📦 Produtos</button>
     <button class="tab-btn" id="tabBtnOrders" onclick="switchTab('orders')">🧾 Pedidos</button>
     <button class="tab-btn" id="tabBtnRepairs" onclick="switchTab('repairs')">✂️ Consertos</button>
+    <button class="tab-btn" id="tabBtnEncomenda" onclick="switchTab('encomenda')">🚂 Sob Encomenda</button>
   </div>
 
   <div class="tab-panel active" id="panelProducts">
@@ -105,7 +122,7 @@
     <table>
       <thead>
         <tr>
-          <th>Foto</th><th>Ícone</th><th>Categoria</th><th>Subcategoria</th><th>Nome</th><th>Descrição</th><th>Preço (R$)</th><th></th>
+          <th>Foto</th><th>Ícone</th><th>Categoria</th><th>Subcategoria</th><th>Nome</th><th>Descrição</th><th>Preço (R$)</th><th>Tamanhos</th><th></th>
         </tr>
       </thead>
       <tbody id="productsBody"></tbody>
@@ -148,9 +165,29 @@
       <p>Nenhuma solicitação de conserto ainda. Assim que um cliente pedir um orçamento, ele aparece aqui.</p>
     </div>
   </div>
+
+  <div class="tab-panel" id="panelEncomenda">
+    <p class="hint">Esses são os itens que aparecem trocando na faixa animada da loja ("sob encomenda"). Um item por linha. Salve para atualizar a loja na hora.</p>
+    <textarea id="encomendaTextarea" rows="10" style="width:100%; padding:16px; border-radius:12px; border:2px solid #e4d8c2; font-family:'Work Sans'; font-size:0.95rem; resize:vertical;" placeholder="Um item por linha, ex:&#10;Pudim tradicional no pote&#10;Linguiça artesanal"></textarea>
+    <button class="add-new-btn" style="margin-top:14px;" onclick="saveEncomenda()">Salvar lista</button>
+  </div>
 </div>
 
 <div class="status-msg" id="statusMsg"></div>
+
+<div class="modal-overlay" id="variantsModal">
+  <div class="modal-box">
+    <h3>Tamanhos e preços</h3>
+    <p class="sub">Adicione as opções de tamanho desse produto. Se deixar só uma, o cliente não vê seletor — compra direto.</p>
+    <div id="variantsRows"></div>
+    <button type="button" class="modal-add-btn" onclick="addVariantRow()">+ Adicionar tamanho</button>
+    <div class="modal-actions">
+      <button type="button" class="modal-save-btn" onclick="saveVariants()">Salvar tamanhos</button>
+      <button type="button" class="modal-cancel-btn" onclick="closeVariantsModal()">Cancelar</button>
+    </div>
+    <p class="modal-hint">Ex: "Individual (290g)" — R$ 15 / "Família (630g)" — R$ 28. Lembre de clicar em "Salvar" na linha do produto depois também.</p>
+  </div>
+</div>
 
 <script>
   let adminKey = '';
@@ -181,14 +218,41 @@
     document.getElementById('tabBtnProducts').classList.toggle('active', tab === 'products');
     document.getElementById('tabBtnOrders').classList.toggle('active', tab === 'orders');
     document.getElementById('tabBtnRepairs').classList.toggle('active', tab === 'repairs');
+    document.getElementById('tabBtnEncomenda').classList.toggle('active', tab === 'encomenda');
     document.getElementById('panelProducts').classList.toggle('active', tab === 'products');
     document.getElementById('panelOrders').classList.toggle('active', tab === 'orders');
     document.getElementById('panelRepairs').classList.toggle('active', tab === 'repairs');
+    document.getElementById('panelEncomenda').classList.toggle('active', tab === 'encomenda');
     document.getElementById('addNewBtn').style.display = tab === 'products' ? 'inline-block' : 'none';
-    const titles = { products: '🚂 Produtos da loja', orders: '🧾 Pedidos recebidos', repairs: '✂️ Solicitações de conserto' };
+    const titles = { products: '🚂 Produtos da loja', orders: '🧾 Pedidos recebidos', repairs: '✂️ Solicitações de conserto', encomenda: '🚂 Itens sob encomenda' };
     document.getElementById('pageTitle').textContent = titles[tab];
     if(tab === 'orders') loadOrders();
     if(tab === 'repairs') loadRepairs();
+    if(tab === 'encomenda') loadEncomenda();
+  }
+
+  async function loadEncomenda(){
+    try {
+      const res = await fetch('/api/settings/encomenda');
+      const data = await res.json();
+      document.getElementById('encomendaTextarea').value = (data.items || []).join('\n');
+    } catch(e) {
+      showStatus('Erro ao carregar lista');
+    }
+  }
+
+  async function saveEncomenda(){
+    const lines = document.getElementById('encomendaTextarea').value.split('\n').map(l => l.trim()).filter(l => l);
+    const res = await fetch('/api/settings/encomenda', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json', 'x-admin-key': adminKey},
+      body: JSON.stringify({items: lines})
+    });
+    if(res.ok){
+      showStatus('Lista atualizada ✓');
+    } else {
+      showStatus('Erro ao salvar');
+    }
   }
 
   async function loadOrders(){
@@ -359,6 +423,10 @@
         <td><input value="${p.name}" data-field="name"></td>
         <td><input value="${p.description}" data-field="description"></td>
         <td class="price-cell"><input type="number" value="${p.price}" data-field="price"></td>
+        <td class="variants-cell">
+          <input type="hidden" data-field="variants" value='${(p.variants || '').replace(/'/g, "&apos;")}'>
+          <button type="button" class="photo-btn" onclick="openVariantsModal('${p.id}')">${p.variants ? '✏️ Editar' : '+ Adicionar'}</button>
+        </td>
         <td class="row-actions">
           <button class="save-btn" onclick="saveRow('${p.id}', this)">Salvar</button>
           <button class="del-btn" onclick="deleteRow('${p.id}', this)">Excluir</button>
@@ -461,7 +529,7 @@
 
   function addNewRow(){
     const newId = 'novo-' + Date.now();
-    const blank = {id:newId, category:'armarinho', subcategory:'', name:'Novo produto', description:'', price:0, icon:'🚂', image:null};
+    const blank = {id:newId, category:'armarinho', subcategory:'', name:'Novo produto', description:'', price:0, icon:'🚂', image:null, variants:null};
     products.unshift(blank);
     renderTable();
     const tr = document.querySelector(`tr[data-id="${newId}"]`);
@@ -473,6 +541,84 @@
     el.textContent = msg;
     el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  // ---------- VARIAÇÕES DE TAMANHO ----------
+  let variantsEditingId = null;
+
+  function openVariantsModal(productId){
+    variantsEditingId = productId;
+    const tr = document.querySelector(`tr[data-id="${productId}"]`);
+    const hiddenInput = tr.querySelector('[data-field="variants"]');
+    let list = [];
+    try { list = hiddenInput.value ? JSON.parse(hiddenInput.value) : []; } catch(e) { list = []; }
+    if(list.length === 0) list = [{label:'', price:''}];
+    renderVariantRows(list);
+    document.getElementById('variantsModal').classList.add('show');
+  }
+
+  function closeVariantsModal(){
+    document.getElementById('variantsModal').classList.remove('show');
+    variantsEditingId = null;
+  }
+
+  function renderVariantRows(list){
+    const container = document.getElementById('variantsRows');
+    container.innerHTML = list.map((v, i) => `
+      <div class="variant-row" data-idx="${i}">
+        <input type="text" placeholder="Ex: Individual (290g)" class="v-label" value="${v.label || ''}">
+        <input type="number" placeholder="R$" class="v-price" value="${v.price != null ? v.price : ''}">
+        <button type="button" class="v-del" onclick="removeVariantRow(this)">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function addVariantRow(){
+    const container = document.getElementById('variantsRows');
+    const div = document.createElement('div');
+    div.className = 'variant-row';
+    div.innerHTML = `
+      <input type="text" placeholder="Ex: Família (630g)" class="v-label">
+      <input type="number" placeholder="R$" class="v-price">
+      <button type="button" class="v-del" onclick="removeVariantRow(this)">✕</button>
+    `;
+    container.appendChild(div);
+  }
+
+  function removeVariantRow(btn){
+    const rows = document.querySelectorAll('.variant-row');
+    if(rows.length <= 1){
+      btn.closest('.variant-row').querySelector('.v-label').value = '';
+      btn.closest('.variant-row').querySelector('.v-price').value = '';
+      return;
+    }
+    btn.closest('.variant-row').remove();
+  }
+
+  function saveVariants(){
+    const rows = document.querySelectorAll('.variant-row');
+    const list = [];
+    rows.forEach(row => {
+      const label = row.querySelector('.v-label').value.trim();
+      const price = row.querySelector('.v-price').value;
+      if(label && price !== ''){
+        list.push({label, price: Number(price)});
+      }
+    });
+
+    const tr = document.querySelector(`tr[data-id="${variantsEditingId}"]`);
+    const hiddenInput = tr.querySelector('[data-field="variants"]');
+    const btn = tr.querySelector('.variants-cell .photo-btn');
+
+    if(list.length === 0){
+      hiddenInput.value = '';
+      btn.textContent = '+ Adicionar';
+    } else {
+      hiddenInput.value = JSON.stringify(list);
+      btn.textContent = '✏️ Editar';
+    }
+    closeVariantsModal();
+    showStatus('Tamanhos definidos — clique em "Salvar" na linha pra confirmar');
   }
 </script>
 

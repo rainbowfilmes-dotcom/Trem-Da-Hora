@@ -57,6 +57,33 @@
   .shop-hero h1 .hl-blue{color:var(--blue);}
   .shop-hero p{max-width:56ch; margin:14px auto 0; font-size:1.02rem; color:var(--ink-soft);}
 
+  /* ---------- LOCOMOTIVA / ENCOMENDA BANNER ---------- */
+  .encomenda-banner{background:var(--wood-dark); padding:22px 0 18px; overflow:hidden; border-bottom:4px solid var(--wood);}
+  .track-wrap{position:relative; height:64px; margin-bottom:10px;}
+  .track-wrap::after{content:''; position:absolute; left:0; right:0; bottom:10px; height:5px; background-image:repeating-linear-gradient(90deg, var(--wood-light) 0 18px, transparent 18px 30px); opacity:0.55;}
+  .station-mark{position:absolute; right:6%; bottom:8px; display:flex; flex-direction:column; align-items:center; z-index:2;}
+  .station-mark .roof{width:0; height:0; border-left:16px solid transparent; border-right:16px solid transparent; border-bottom:14px solid var(--brick);}
+  .station-mark .post{width:6px; height:26px; background:var(--wood-light);}
+  .station-mark .sign{position:absolute; top:-38px; font-family:'Fraunces'; font-weight:800; font-size:0.62rem; color:var(--yellow); letter-spacing:0.04em; white-space:nowrap;}
+  .train-svg{position:absolute; bottom:6px; left:-180px; width:150px; animation:train-move 8s linear infinite;}
+  @keyframes train-move{
+    0%{left:-180px;}
+    55%{left:calc(94% - 150px);}
+    75%{left:calc(94% - 150px);}
+    100%{left:110%;}
+  }
+  .smoke-puff{fill:var(--paper-2); opacity:0; transform-origin:42px 8px; animation:smoke-rise 2.4s ease-in infinite;}
+  .smoke-puff:nth-of-type(2){animation-delay:0.7s;}
+  .smoke-puff:nth-of-type(3){animation-delay:1.4s;}
+  @keyframes smoke-rise{
+    0%{opacity:0; transform:translate(0,0) scale(0.4);}
+    20%{opacity:0.8;}
+    100%{opacity:0; transform:translate(-10px,-30px) scale(1.4);}
+  }
+  .encomenda-text-wrap{text-align:center; min-height:32px;}
+  .encomenda-label{font-family:'Caveat'; font-weight:700; color:var(--yellow); font-size:1.1rem; margin-right:6px;}
+  #encomendaText{color:var(--paper); font-weight:700; font-size:1.05rem; transition:opacity .3s ease;}
+
   /* ---------- CATEGORY TABS ---------- */
   .cat-bar{position:sticky; top:69px; z-index:40; background:var(--paper); padding:14px 0; border-bottom:2px dashed rgba(42,31,22,0.14);}
   .cat-tabs{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px;}
@@ -201,6 +228,41 @@
     <span class="tag">tudo debaixo do mesmo telhado</span>
     <h1><span class="hl-brick">A</span>rmarinho <span class="hl-yellow">D</span>ecoração <span class="hl-blue">M</span>oda & Culinária — do jeito de sempre, agora online</h1>
     <p>Escolha seus produtos, monte o carrinho e finalize a compra por aqui. Precisa de um ajuste na roupa? Peça um orçamento de conserto lá embaixo.</p>
+  </div>
+</section>
+
+<section class="encomenda-banner">
+  <div class="wrap">
+    <div class="track-wrap">
+      <div class="station-mark">
+        <span class="sign">ESTAÇÃO TDH</span>
+        <div class="roof"></div>
+        <div class="post"></div>
+      </div>
+
+      <svg class="train-svg" viewBox="0 0 200 90" xmlns="http://www.w3.org/2000/svg">
+        <circle class="smoke-puff" cx="42" cy="8" r="6"></circle>
+        <circle class="smoke-puff" cx="42" cy="8" r="6"></circle>
+        <circle class="smoke-puff" cx="42" cy="8" r="6"></circle>
+        <rect x="35" y="10" width="12" height="20" rx="2" fill="#3E2A1D"></rect>
+        <rect x="20" y="28" width="120" height="6" fill="#F2B705"></rect>
+        <rect x="20" y="32" width="120" height="38" rx="6" fill="#A6432E"></rect>
+        <rect x="100" y="8" width="42" height="26" rx="4" fill="#1F4E79"></rect>
+        <rect x="108" y="14" width="12" height="12" rx="1" fill="#FFFDF8"></rect>
+        <rect x="126" y="14" width="12" height="12" rx="1" fill="#FFFDF8"></rect>
+        <polygon points="140,68 162,68 150,48" fill="#F2B705"></polygon>
+        <circle cx="40" cy="74" r="12" fill="#2A1F16"></circle>
+        <circle cx="80" cy="74" r="12" fill="#2A1F16"></circle>
+        <circle cx="120" cy="74" r="12" fill="#2A1F16"></circle>
+        <circle cx="40" cy="74" r="4" fill="#C79256"></circle>
+        <circle cx="80" cy="74" r="4" fill="#C79256"></circle>
+        <circle cx="120" cy="74" r="4" fill="#C79256"></circle>
+      </svg>
+    </div>
+
+    <div class="encomenda-text-wrap">
+      <span class="encomenda-label">sob encomenda:</span><span id="encomendaText"></span>
+    </div>
   </div>
 </section>
 
@@ -367,8 +429,18 @@
   let PRODUCTS = {};
   CATEGORIES.forEach(c => PRODUCTS[c] = []);
 
-  let cart = {}; // id -> {product, qty}
+  let cart = {}; // cartKey -> {product, qty, price, variantLabel}
   let payMethod = 'card';
+
+  function parseVariants(raw){
+    if(!raw) return null;
+    try {
+      const list = JSON.parse(raw);
+      return Array.isArray(list) && list.length > 0 ? list : null;
+    } catch(e) {
+      return null;
+    }
+  }
 
   async function loadProducts(){
     const res = await fetch('/api/products');
@@ -376,7 +448,7 @@
     CATEGORIES.forEach(c => PRODUCTS[c] = []);
     for(const row of rows){
       if(!PRODUCTS[row.category]) PRODUCTS[row.category] = [];
-      PRODUCTS[row.category].push({ id: row.id, name: row.name, desc: row.description, price: row.price, icon: row.icon, image: row.image, subcategory: row.subcategory });
+      PRODUCTS[row.category].push({ id: row.id, name: row.name, desc: row.description, price: row.price, icon: row.icon, image: row.image, subcategory: row.subcategory, variants: parseVariants(row.variants) });
     }
     renderProducts();
   }
@@ -414,6 +486,28 @@
   }
 
   function productCard(p, cat){
+    if(p.variants){
+      const selectId = `variant-${p.id}`;
+      const optionsHtml = p.variants.map((v, i) => `<option value="${i}">${v.label} — R$ ${v.price}</option>`).join('');
+      return `
+        <div class="product-card">
+          <div class="product-img" style="background:${cardBg(cat)};">${p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">` : p.icon}</div>
+          <div class="product-body">
+            <h3>${p.name}</h3>
+            <p>${p.desc}</p>
+            <div class="field" style="margin-bottom:12px;">
+              <select id="${selectId}" class="variant-select" onchange="updateVariantPrice('${p.id}')">
+                ${optionsHtml}
+              </select>
+            </div>
+            <div class="product-foot">
+              <div class="price" id="price-${p.id}">R$ ${p.variants[0].price}<span>por item</span></div>
+              <button class="add-btn" id="btn-${p.id}" onclick="addToCart('${cat}','${p.id}', this)">+ Adicionar</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
     return `
         <div class="product-card">
           <div class="product-img" style="background:${cardBg(cat)};">${p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">` : p.icon}</div>
@@ -427,6 +521,13 @@
           </div>
         </div>
       `;
+  }
+
+  function updateVariantPrice(productId){
+    const product = findProduct(productId);
+    const select = document.getElementById(`variant-${productId}`);
+    const variant = product.variants[Number(select.value)];
+    document.getElementById(`price-${productId}`).innerHTML = `R$ ${variant.price}<span>por item</span>`;
   }
 
   function cardBg(cat){
@@ -449,7 +550,20 @@
 
   function addToCart(cat, id, btnEl){
     const product = PRODUCTS[cat].find(p => p.id === id);
-    if(cart[id]){ cart[id].qty += 1; } else { cart[id] = {product, qty:1}; }
+    let price = product.price;
+    let variantLabel = null;
+    let cartKey = id;
+
+    if(product.variants){
+      const select = document.getElementById(`variant-${id}`);
+      const variantIdx = Number(select.value);
+      const variant = product.variants[variantIdx];
+      price = variant.price;
+      variantLabel = variant.label;
+      cartKey = id + '::' + variantIdx;
+    }
+
+    if(cart[cartKey]){ cart[cartKey].qty += 1; } else { cart[cartKey] = {product, qty:1, price, variantLabel}; }
     renderCart();
     if(btnEl){
       btnEl.textContent = 'Adicionado ✓';
@@ -458,20 +572,20 @@
     }
   }
 
-  function changeQty(id, delta){
-    if(!cart[id]) return;
-    cart[id].qty += delta;
-    if(cart[id].qty <= 0) delete cart[id];
+  function changeQty(cartKey, delta){
+    if(!cart[cartKey]) return;
+    cart[cartKey].qty += delta;
+    if(cart[cartKey].qty <= 0) delete cart[cartKey];
     renderCart();
   }
 
-  function removeItem(id){
-    delete cart[id];
+  function removeItem(cartKey){
+    delete cart[cartKey];
     renderCart();
   }
 
   function cartTotal(){
-    return Object.values(cart).reduce((sum, item) => sum + item.product.price * item.qty, 0);
+    return Object.values(cart).reduce((sum, item) => sum + item.price * item.qty, 0);
   }
 
   function cartItemCount(){
@@ -487,20 +601,20 @@
     if(count === 0){
       container.innerHTML = `<div class="cart-empty"><div class="big">🛒</div><p>Seu carrinho está vazio.<br>Adicione produtos para continuar.</p></div>`;
     } else {
-      container.innerHTML = Object.entries(cart).map(([id, item]) => `
+      container.innerHTML = Object.entries(cart).map(([cartKey, item]) => `
         <div class="cart-item">
-          <div class="ic" style="background:${cardBg(catOf(id))};">${item.product.icon}</div>
+          <div class="ic" style="background:${cardBg(catOf(item.product.id))};">${item.product.icon}</div>
           <div class="cart-item-info">
-            <h4>${item.product.name}</h4>
-            <div class="unit">R$ ${item.product.price} / un</div>
+            <h4>${item.product.name}${item.variantLabel ? ` — ${item.variantLabel}` : ''}</h4>
+            <div class="unit">R$ ${item.price} / un</div>
             <div class="qty-row">
-              <button class="qty-btn" onclick="changeQty('${id}', -1)">−</button>
+              <button class="qty-btn" onclick="changeQty('${cartKey}', -1)">−</button>
               <span class="qty-val">${item.qty}</span>
-              <button class="qty-btn" onclick="changeQty('${id}', 1)">+</button>
-              <span class="remove-link" onclick="removeItem('${id}')">remover</span>
+              <button class="qty-btn" onclick="changeQty('${cartKey}', 1)">+</button>
+              <span class="remove-link" onclick="removeItem('${cartKey}')">remover</span>
             </div>
           </div>
-          <div class="item-total">R$ ${item.product.price * item.qty}</div>
+          <div class="item-total">R$ ${item.price * item.qty}</div>
         </div>
       `).join('');
     }
@@ -550,8 +664,8 @@
   }
 
   function renderCheckoutSummary(){
-    const rows = Object.entries(cart).map(([id, item]) => `
-      <div class="co-summary-row"><span>${item.qty}× ${item.product.name}</span><span>R$ ${item.product.price * item.qty}</span></div>
+    const rows = Object.values(cart).map(item => `
+      <div class="co-summary-row"><span>${item.qty}× ${item.product.name}${item.variantLabel ? ` (${item.variantLabel})` : ''}</span><span>R$ ${item.price * item.qty}</span></div>
     `).join('');
     document.getElementById('coSummary').innerHTML = rows + `
       <div class="co-summary-row total"><span>Total</span><span>R$ ${cartTotal()}</span></div>
@@ -577,7 +691,7 @@
     }
 
     const items = Object.values(cart).map(item => ({
-      id: item.product.id, name: item.product.name, price: item.product.price, qty: item.qty
+      id: item.product.id, name: item.product.name + (item.variantLabel ? ` (${item.variantLabel})` : ''), price: item.price, qty: item.qty
     }));
 
     const btn = document.querySelector('.place-order-btn');
@@ -688,9 +802,34 @@
     window.history.replaceState({}, '', window.location.pathname);
   }
 
+  const ENCOMENDA_FALLBACK = ['Consulte os itens sob encomenda pelo WhatsApp'];
+  let ENCOMENDA_ITEMS = ENCOMENDA_FALLBACK;
+  let encomendaIdx = 0;
+
+  async function loadEncomendaItems(){
+    try {
+      const res = await fetch('/api/settings/encomenda');
+      const data = await res.json();
+      if(data.items && data.items.length > 0) ENCOMENDA_ITEMS = data.items;
+    } catch(e) { /* mantém o texto padrão se der erro */ }
+  }
+
+  function rotateEncomenda(){
+    const el = document.getElementById('encomendaText');
+    if(!el) return;
+    el.style.opacity = 0;
+    setTimeout(() => {
+      el.textContent = ENCOMENDA_ITEMS[encomendaIdx];
+      el.style.opacity = 1;
+      encomendaIdx = (encomendaIdx + 1) % ENCOMENDA_ITEMS.length;
+    }, 300);
+  }
+
   loadProducts();
   renderCart();
   checkReturnFromPayment();
+  loadEncomendaItems().then(rotateEncomenda);
+  setInterval(rotateEncomenda, 3800);
 </script>
 
 </body>
