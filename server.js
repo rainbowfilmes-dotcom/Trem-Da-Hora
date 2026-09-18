@@ -88,13 +88,13 @@ const server = http.createServer(async (req, res) => {
       if (!isAdmin(req)) return sendJSON(res, 401, { error: 'Senha de admin inválida' });
       try {
         const body = await readBody(req);
-        const { id: newId, category, name, description, price, icon, image } = body;
+        const { id: newId, category, subcategory, name, description, price, icon, image, variants } = body;
         if (!newId || !category || !name || price == null) {
           return sendJSON(res, 400, { error: 'Campos obrigatórios: id, category, name, price' });
         }
         db.prepare(
-          'INSERT INTO products (id, category, name, description, price, icon, image) VALUES (?, ?, ?, ?, ?, ?, ?)'
-        ).run(newId, category, name, description || '', price, icon || '🎉', image || null);
+          'INSERT INTO products (id, category, subcategory, name, description, price, icon, image, variants) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).run(newId, category, subcategory || null, name, description || '', price, icon || '🎉', image || null, variants || null);
         return sendJSON(res, 201, { ok: true });
       } catch (e) {
         return sendJSON(res, 400, { error: 'JSON inválido ou id duplicado' });
@@ -110,8 +110,8 @@ const server = http.createServer(async (req, res) => {
         if (!existing) return sendJSON(res, 404, { error: 'Produto não encontrado' });
         const updated = { ...existing, ...body };
         db.prepare(
-          'UPDATE products SET category=?, name=?, description=?, price=?, icon=?, image=? WHERE id=?'
-        ).run(updated.category, updated.name, updated.description, updated.price, updated.icon, updated.image || null, id);
+          'UPDATE products SET category=?, subcategory=?, name=?, description=?, price=?, icon=?, image=?, variants=? WHERE id=?'
+        ).run(updated.category, updated.subcategory || null, updated.name, updated.description, updated.price, updated.icon, updated.image || null, updated.variants || null, id);
         return sendJSON(res, 200, { ok: true });
       } catch (e) {
         return sendJSON(res, 400, { error: 'JSON inválido' });
@@ -235,6 +235,28 @@ const server = http.createServer(async (req, res) => {
         if (!existing) return sendJSON(res, 404, { error: 'Solicitação não encontrada' });
         const newStatus = body.status || existing.status;
         db.prepare('UPDATE repairs SET status = ? WHERE id = ?').run(newStatus, repairId);
+        return sendJSON(res, 200, { ok: true });
+      } catch (e) {
+        return sendJSON(res, 400, { error: 'JSON inválido' });
+      }
+    }
+  }
+
+  // ---------- CONFIGURAÇÕES (textos editáveis, ex: "sob encomenda") ----------
+  if (parts[0] === 'api' && parts[1] === 'settings' && parts[2] === 'encomenda') {
+    // GET /api/settings/encomenda -> qualquer visitante pode ler (usado na loja)
+    if (req.method === 'GET') {
+      const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('encomenda_items');
+      return sendJSON(res, 200, { items: row ? JSON.parse(row.value) : [] });
+    }
+
+    // PUT /api/settings/encomenda -> só admin pode editar
+    if (req.method === 'PUT') {
+      if (!isAdmin(req)) return sendJSON(res, 401, { error: 'Senha de admin inválida' });
+      try {
+        const body = await readBody(req);
+        const items = Array.isArray(body.items) ? body.items.filter(i => i && i.trim()) : [];
+        db.prepare('UPDATE settings SET value = ? WHERE key = ?').run(JSON.stringify(items), 'encomenda_items');
         return sendJSON(res, 200, { ok: true });
       } catch (e) {
         return sendJSON(res, 400, { error: 'JSON inválido' });
