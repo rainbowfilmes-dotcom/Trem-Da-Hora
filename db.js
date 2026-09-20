@@ -2,7 +2,9 @@
 const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 
-const dbPath = path.join(__dirname, 'loja.db');
+// Se DB_PATH estiver definida (ex: apontando pro disco persistente do Render), usa ela.
+// Caso contrário, cria o banco na própria pasta do projeto (bom para testar no seu PC).
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'loja.db');
 const db = new DatabaseSync(dbPath);
 
 // Tabela de produtos
